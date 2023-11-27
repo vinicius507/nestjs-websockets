@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socket Demo</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"
+    integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz"
+    crossorigin="anonymous"></script>
+  <script>
+    window.onload = () => {
+      const socket = io("http://localhost:3000");
+
+      const messageForm = document.getElementById("messageForm");
+      const messageInput = document.getElementById("messageInput");
+      const messageContainer = document.getElementById("messageContainer");
+      const usernameInput = document.getElementById("usernameInput");
+
+      messageForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const data = {
+          author: usernameInput.value ?? "anon",
+          message: messageInput.value,
+        };
+
+        messageInput.value = "";
+
+        socket.emit("events", data);
+      });
+
+      socket.on("connect", () => {
+        console.log("Connected to server");
+      });
+
+      socket.on("connect_error", (err) => {
+        console.error(`Could not connect to the server: ${err}`);
+      });
+
+      socket.on("events", (data) => {
+        const {author, message} = data;
+        const messageDiv = document.createElement("div");
+        messageDiv.innerHTML = `
+          <b>${author}</b>: ${message}
+        `;
+        messageContainer.appendChild(messageDiv);
+        console.log(messageContainer);
+      });
+
+      socket.on("disconnect", (reason) => {
+        console.log(reason);
+      });
+    };
+  </script>
+</head>
+
+<body>
+  <h1>Socket Demo</h1>
+
+  <form id="messageForm">
+    <input type="text" name="username" id="usernameInput" placeholder="Username">
+    <br />
+    <input type="text" name="message" id="messageInput" placeholder="Enter message">
+    <button type="submit">Send</button>
+  </form>
+  <div id="messageContainer"></div>
+</body>
+
+</html>
