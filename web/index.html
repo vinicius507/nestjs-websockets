@@ -38,6 +38,7 @@
 
     let username;
     let currentChatUser;
+    let messagesByUser = {};
 
     function connectToSocket() {
       username = document.getElementById("username").value.trim();
@@ -55,6 +56,7 @@
 
       currentChatUser = selectedUser;
       document.getElementById("currentChatUser").innerText = currentChatUser;
+      document.getElementById('chatMessages').innerHTML = getMessagesHTML(currentChatUser);
     }
 
     function sendMessage() {
@@ -62,12 +64,25 @@
 
       if (message && currentChatUser) {
         socket.emit("message", { message, to: currentChatUser });
-        const chatMessages = document.getElementById('chatMessages');
-        const messageElement = document.createElement('li');
-        messageElement.innerHTML = `<strong>${username}</strong>: ${message}`;
-        chatMessages.appendChild(messageElement);
+        addMessage(currentChatUser, { from: username, message });
+        document.getElementById('chatMessages').innerHTML = getMessagesHTML(currentChatUser);
       } else {
         alert("Please enter a message and select a user to chat with.");
+      }
+    }
+
+    function addMessage(target, { from, message }) {
+      if (!messagesByUser[target]) {
+        messagesByUser[target] = [];
+      }
+      messagesByUser[target].push({ from, message });
+    }
+
+    function getMessagesHTML(user) {
+      if (messagesByUser[user]) {
+        return messagesByUser[user].map(({ from, message }) => `<li><strong>${from}</strong>: ${message}</li>`).join('');
+      } else {
+        return '';
       }
     }
 
@@ -96,13 +111,28 @@
         userElement.innerText = user;
         userListElement.appendChild(userElement);
       });
+
+      if (currentChatUser && !users.includes(currentChatUser)) {
+        currentChatUser = null;
+        document.getElementById('currentChatUser').textContent = '';
+        document.getElementById('chatMessages').innerHTML = '';
+      }
     });
 
-    socket.on("message", ({ from, message }) => {
+    socket.on("message", (data) => {
+      const { from, message } = data;
       const chatMessages = document.getElementById('chatMessages');
       const messageElement = document.createElement('li');
-      messageElement.innerHTML = `<strong>${from}</strong>: ${message}`;
-      chatMessages.appendChild(messageElement);
+
+      if (!messagesByUser[from]) {
+        messagesByUser[from] = [];
+      }
+
+      addMessage(from, { from, message });
+
+      if (currentChatUser === from) {
+        document.getElementById('chatMessages').innerHTML = getMessagesHTML(currentChatUser);
+      }
     })
 
     socket.on("messageError", (error) => {
