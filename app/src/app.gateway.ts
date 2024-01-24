@@ -36,6 +36,9 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
     this.connectedUsers[username] = client;
     this.logger.log(`Client connected: ${username}(${client.id})`);
+
+    client.emit("authorized");
+    this.server.emit("userList", Object.keys(this.connectedUsers));
   }
 
   handleDisconnect(client: Socket) {

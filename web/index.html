@@ -5,6 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Socket Demo</title>
+  <style>
+    #userList li {
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+      list-style-type: none;
+    }
+  </style>
 </head>
 
 <body>
@@ -13,6 +21,9 @@
   <label for="username">Choose a username:</label>
   <input type="text" id="username" placeholder="Enter your username">
   <button onclick="connectToSocket()">Connect</button>
+
+  <h2>Connected Users</h2>
+  <ul id="userList"></ul>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"
     integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz"
@@ -42,8 +53,23 @@
       alert(`An error occurred while connecting to the server: ${err.message}`);
     });
 
+    socket.on("authorized", () => {
+      document.getElementById("username").disabled = true;
+    });
+
     socket.on("unauthorized", (reason) => {
       alert(`Unauthorized: ${reason}`);
+    });
+
+    socket.on("userList", (userList) => {
+      const userListElement = document.getElementById("userList");
+      userListElement.innerHTML = "";
+
+      userList.filter((user) => user !== username).forEach((user) => {
+        const userElement = document.createElement("li");
+        userElement.innerText = user;
+        userListElement.appendChild(userElement);
+      });
     });
   </script>
 </body>
