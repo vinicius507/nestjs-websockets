@@ -108,7 +108,13 @@
       const otherUsers = userList.filter((user) => user !== username);
       userListElement.innerHTML = otherUsers.map((user) => `<a href="#">${user}</a>`).join("<br/>");
 
-      if (currentChatUser && !users.includes(currentChatUser)) {
+      if (!currentChatUser && otherUsers.length > 0) {
+        currentChatUser = otherUsers[0];
+        document.getElementById('currentChatUser').textContent = currentChatUser;
+        document.getElementById('chatMessages').innerHTML = getMessagesHTML(currentChatUser);
+        return;
+      }
+      if (otherUsers.length === 0 || !users.includes(currentChatUser)) {
         currentChatUser = null;
         document.getElementById('currentChatUser').textContent = '';
         document.getElementById('chatMessages').innerHTML = '';
