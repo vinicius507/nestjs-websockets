@@ -66,6 +66,7 @@
         socket.emit("message", { message, to: currentChatUser });
         addMessage(currentChatUser, { from: username, message });
         document.getElementById('chatMessages').innerHTML = getMessagesHTML(currentChatUser);
+        document.getElementById("messageInput").value = '';
       } else {
         alert("Please enter a message and select a user to chat with.");
       }
