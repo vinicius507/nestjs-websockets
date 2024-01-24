@@ -23,7 +23,12 @@
   <button onclick="connectToSocket()">Connect</button>
 
   <h2>Connected Users</h2>
-  <ul id="userList"></ul>
+  <ul id="userList" onclick="selectUser(event)"></ul>
+
+  <h2>Chat with <span id="currentChatUser"></span></h2>
+  <ul id="chatMessages"></ul>
+  <input type="text" id="messageInput" placeholder="Type your message">
+  <button onclick="sendMessage()">Send</button>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"
     integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz"
@@ -42,6 +47,27 @@
         socket.connect();
       } else {
         alert("Please enter a valid username.");
+      }
+    }
+
+    function selectUser(event) {
+      const selectedUser = event.target.textContent;
+
+      currentChatUser = selectedUser;
+      document.getElementById("currentChatUser").innerText = currentChatUser;
+    }
+
+    function sendMessage() {
+      const message = document.getElementById("messageInput").value.trim();
+
+      if (message && currentChatUser) {
+        socket.emit("message", { message, to: currentChatUser });
+        const chatMessages = document.getElementById('chatMessages');
+        const messageElement = document.createElement('li');
+        messageElement.innerHTML = `<strong>${username}</strong>: ${message}`;
+        chatMessages.appendChild(messageElement);
+      } else {
+        alert("Please enter a message and select a user to chat with.");
       }
     }
 
@@ -70,6 +96,17 @@
         userElement.innerText = user;
         userListElement.appendChild(userElement);
       });
+    });
+
+    socket.on("message", ({ from, message }) => {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageElement = document.createElement('li');
+      messageElement.innerHTML = `<strong>${from}</strong>: ${message}`;
+      chatMessages.appendChild(messageElement);
+    })
+
+    socket.on("messageError", (error) => {
+      alert(`An error occurred while sending your message: ${error.message}`);
     });
   </script>
 </body>

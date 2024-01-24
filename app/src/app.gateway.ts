@@ -3,6 +3,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
@@ -46,5 +47,19 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
     delete this.connectedUsers[username];
     this.logger.log(`Client disconnected: ${username || "unnamed"}(${client.id})`);
+  }
+
+  @SubscribeMessage("message")
+  handleMessage(client: Socket, payload: { to: string, message: string }) {
+    const { username } = client.handshake.auth;
+    const { to, message } = payload;
+
+    if (!this.connectedUsers.hasOwnProperty(to)) {
+      client.emit("messageError", "User not found");
+      return;
+    }
+
+    const target = this.connectedUsers[to];
+    this.server.to(target.id).emit("message", { from: username, message });
   }
 }
