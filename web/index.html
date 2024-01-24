@@ -23,10 +23,10 @@
   <button onclick="connectToSocket()">Connect</button>
 
   <h2>Connected Users</h2>
-  <ul id="userList" onclick="selectUser(event)"></ul>
+  <div id="userList" onclick="selectUser(event)"></div>
 
   <h2>Chat with <span id="currentChatUser"></span></h2>
-  <ul id="chatMessages"></ul>
+  <div id="chatMessages"></div>
   <input type="text" id="messageInput" placeholder="Type your message">
   <button onclick="sendMessage()">Send</button>
 
@@ -80,7 +80,7 @@
 
     function getMessagesHTML(user) {
       if (messagesByUser[user]) {
-        return messagesByUser[user].map(({ from, message }) => `<li><strong>${from}</strong>: ${message}</li>`).join('');
+        return messagesByUser[user].map(({ from, message }) => `<span><strong>${from}</strong>: ${message}</span>`).join('<br/>');
       } else {
         return '';
       }
@@ -104,13 +104,8 @@
 
     socket.on("userList", (userList) => {
       const userListElement = document.getElementById("userList");
-      userListElement.innerHTML = "";
-
-      userList.filter((user) => user !== username).forEach((user) => {
-        const userElement = document.createElement("li");
-        userElement.innerText = user;
-        userListElement.appendChild(userElement);
-      });
+      const otherUsers = userList.filter((user) => user !== username);
+      userListElement.innerHTML = otherUsers.map((user) => `<a href="#">${user}</a>`).join("<br/>");
 
       if (currentChatUser && !users.includes(currentChatUser)) {
         currentChatUser = null;
