@@ -46,6 +46,7 @@ export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
     const { username } = client.handshake.auth;
 
     delete this.connectedUsers[username];
+    this.server.emit("userList", Object.keys(this.connectedUsers));
     this.logger.log(`Client disconnected: ${username || "unnamed"}(${client.id})`);
   }
 
